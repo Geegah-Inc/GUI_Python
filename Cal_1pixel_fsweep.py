@@ -113,8 +113,22 @@ for freq in range(start_frequency*100,end_frequency*100,math.floor(frequency_int
         
 plt.ioff()  # Turn off interactive mode
 plt.show()     
-#%%
 
+#%% FINDING THE LARGEST FREQUENCY WHERE I = Q
+
+def find_largest_magnitude_frequency(i_adj, q_adj, freqs):
+    # Calculate the absolute difference between I and Q
+    diff = np.abs(np.array(i_adj) - np.array(q_adj))
+    # Indices where I ~ Q
+    equal_indices = np.where(diff <= 0.01)[0]
+    # Find the frequency where the magnitude of I or Q is the largest
+    signal = np.maximum(np.abs(np.array(i_adj)[equal_indices]), np.abs(np.array(q_adj)[equal_indices]))
+    max_signal_index = equal_indices[np.argmax(signal)]
+    # Corresponding frequency
+    I_equal_q_freq = freqs[max_signal_index]
+    return I_equal_q_freq
+  
+#%%
 def calibrate_iq_signals(i, q):
     # Calculate basic statistics: max, min, midpoint, and range for both signals
     i_max, i_min = max(i), min(i)
@@ -160,13 +174,23 @@ def calibrate_iq_signals(i, q):
 i = i
 q = q
 
+# After adjusting the signals
 adjusted_i, adjusted_q, calibration_params = calibrate_iq_signals(i, q)
+# f where I equals Q
+frequency = find_largest_magnitude_frequency(adjusted_i, adjusted_q, freqs)
 
-plt.plot(freqs,adjusted_i, label = 'I', linewidth = 3)
-plt.plot(freqs, adjusted_q, label = 'Q', linewidth = 3)
+# Plotting
+plt.plot(freqs, adjusted_i, label='I', linewidth=3)
+plt.plot(freqs, adjusted_q, label='Q', linewidth=3)
+
+# Highlight the point with the largest magnitude where I equals Q
+IQ_idx = freqs.index(frequency)
+IQ_val = adjusted_i[IQ_idx]
+
+plt.scatter([frequency],[IQ_val] , color='blue', s=100, zorder=5, label = 'I = Q frequency')
+
 plt.title("Adjusted I and Q vs frequency (64,64)")
 plt.ylabel("Adjusted Echo (V)")
-plt.xlabel("Frequency (MHz)")
 plt.legend()
 plt.show()
 
