@@ -51,6 +51,25 @@ def acqSingleFrameCAL(xem, ADCNUM):
     xem.Close()
     return byte_data
 
+def acqSingleFrame_FSWEEP(xem, ADCNUM, file_name,):
+    xem.Open()
+    xem.SelectADC(0)
+    xem.SelectFakeADC(0)
+    xem.EnablePgen(0)
+    xem.ResetFifo()
+    xem.EnablePipeTransfer(1)
+    xem.StartAcq()
+    
+    # Set the array size to match the data, but make it a multiple of 1024
+    byte_data = bytearray(128*128*2*2)
+    nbytes = xem.GetPipeData(byte_data)
+    
+    #print ("GetPipeData returned ", byte_data)
+    f = open(file_name, "wb")
+    f.write(byte_data)
+    f.close()
+    xem.Close()
+    return byte_data
 
 #SETTINGS FUNCTIONS
 
